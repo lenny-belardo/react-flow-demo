@@ -1,5 +1,18 @@
+import { useCallback } from 'react';
 import { useQuery, gql } from '@apollo/client';
-import { ReactFlow } from '@xyflow/react';
+import { ReactFlow, addEdge,   MiniMap,
+  Controls,
+  Background,useEdgesState, useNodesState } from '@xyflow/react';
+import {
+  nodes as initialNodes,
+  edges as initialEdges
+} from './initial-elements.jsx';
+import AnnotationNode from './AnnotationNode';
+import ToolbarNode from './ToolbarNode';
+import ResizerNode from './ResizerNode';
+import CircleNode from './CircleNode';
+import TextInputNode from './TextInputNode';
+import ButtonEdge from './ButtonEdge';
 
 import '@xyflow/react/dist/style.css';
 
@@ -11,22 +24,52 @@ const GET_APPLICATION_GRAPH = gql`
   }
 `;
 
+const nodeTypes = {
+  annotation: AnnotationNode,
+  tools: ToolbarNode,
+  resizer: ResizerNode,
+  circle: CircleNode,
+  textinput: TextInputNode
+};
+
+const edgeTypes = {
+  button: ButtonEdge,
+};
+
+const nodeClassName = (node) => node.type;
+
 function App() {
   const { data } = useQuery(GET_APPLICATION_GRAPH);
   console.log("applicationGraph data ", data?.applicationGraph);
 
-  const initialNodes = [
-    { id: '1', position: { x: 0, y: 0 }, data: { label: '1' } },
-    { id: '2', position: { x: 0, y: 100}, data: { label: '2' } }
-  ];
+  const onConnect = useCallback(
+    (params) => setEdges((eds) => addEdge(params, eds)),
+    [],
+  );
 
-  const initialEdges = [{ id: 'e1-2', source: '1', target: '2' }];
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
-      <ReactFlow nodes={initialNodes} edges={initialEdges} />
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onConnect={onConnect}
+      fitView
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      attributionPosition="top-right"
+      style={{ backgroundColor: "#F7F9FB" }}
+    >
+            <MiniMap zoomable pannable nodeClassName={nodeClassName} />
+            <Controls />
+            <Background  />
+    </ReactFlow>
     </div>
+
   )
+
 }
 
 export default App
