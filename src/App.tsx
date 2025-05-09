@@ -1,10 +1,13 @@
 import { Suspense } from 'react';
 import ApplicationsGraph from './ApplicationsGraph.tsx';
+import Loading from './Loading.tsx';
+
+import "./App.css";
 
 function App () {
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
-      <Suspense fallback={<div>Loading...</div>}>
+    <div className='app'>
+      <Suspense fallback={<Loading />}>
         <ApplicationsGraph />
       </Suspense>
     </div>
