@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useQuery, gql } from '@apollo/client';
+import { useQuery, useSuspenseQuery, gql } from '@apollo/client';
 import { ReactFlow, addEdge,   MiniMap,
   Controls,
   Background,useEdgesState, useNodesState } from '@xyflow/react';
@@ -39,7 +39,7 @@ const edgeTypes = {
 const nodeClassName = (node) => node.type;
 
 function ApplicationsGraph() {
-  const { data } = useQuery(GET_APPLICATION_GRAPH);
+  const { data } = useSuspenseQuery(GET_APPLICATION_GRAPH);
   console.log("applicationGraph data ", data?.applicationGraph);
 
   const onConnect = useCallback(
@@ -63,7 +63,9 @@ function ApplicationsGraph() {
         style={{ backgroundColor: "#F7F9FB" }}
       >
         <MiniMap zoomable pannable nodeClassName={nodeClassName} />
+
         <Controls />
+
         <Background  />
       </ReactFlow>
     </div>
