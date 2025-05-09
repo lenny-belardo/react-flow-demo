@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import ApplicationsGraph from './ApplicationsGraph.js';
+import ApplicationsGraph from './ApplicationsGraph.tsx';
 
 function App () {
   return (
