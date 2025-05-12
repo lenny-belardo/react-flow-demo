@@ -600,7 +600,7 @@ export const handlers = [
       });
     }),
     graphql.query('Systems', async () => {
-        await delay(8000);
+        await delay(1500);
 
         return HttpResponse.json({
           data: {
