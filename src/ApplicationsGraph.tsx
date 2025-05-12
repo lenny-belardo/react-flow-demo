@@ -1,8 +1,14 @@
 import { useCallback } from 'react';
-import { useQuery, useSuspenseQuery, gql } from '@apollo/client';
-import { ReactFlow, addEdge,   MiniMap,
+import { useSuspenseQuery, gql } from '@apollo/client';
+import {
+  ReactFlow,
+  addEdge,
+  Background,
   Controls,
-  Background,useEdgesState, useNodesState } from '@xyflow/react';
+  MiniMap,
+  useEdgesState,
+  useNodesState
+} from '@xyflow/react';
 import {
   nodes as initialNodes,
   edges as initialEdges
@@ -31,6 +37,7 @@ const GET_SYSTEMS = gql`
     }
   }
 `;
+
 const nodeTypes = {
   annotation: AnnotationNode,
   tools: ToolbarNode,
