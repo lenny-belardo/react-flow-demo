@@ -1,4 +1,27 @@
-import { graphql, HttpResponse } from 'msw';
+import { delay, graphql, HttpResponse } from 'msw';
+
+
+const systems = {
+    getSystems: {
+        systems: [{
+            id: "machine-id-aaaa",
+            version: 5,
+            __typename: "System"
+        }, {
+            id: "machine-id-bbbb",
+            version: 4,
+            __typename: "System"
+        }, {
+            id: "machine-id-cccc",
+            version: 3,
+            __typename: "System"
+        }, {
+            id: "machine-id-dddd",
+            version: 2,
+            __typename: "System"
+        }]
+    }
+};
 
 const applicationGraph = {
     getApplicationGraph: {
@@ -567,11 +590,22 @@ const applicationGraph = {
 };
 
 export const handlers = [
-    graphql.query('ApplicationGraph', () => {
+    graphql.query('ApplicationGraph', async () => {
+      await delay(1000);
+
+      return HttpResponse.json({
+        data: {
+          applicationGraph
+        }
+      });
+    }),
+    graphql.query('Systems', async () => {
+        await delay(8000);
+
         return HttpResponse.json({
-            data: {
-                applicationGraph
-            }
+          data: {
+            systems
+          }
         });
-    })
-];
+      })
+  ];

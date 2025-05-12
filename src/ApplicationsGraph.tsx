@@ -1,8 +1,14 @@
 import { useCallback } from 'react';
-import { useQuery, useSuspenseQuery, gql } from '@apollo/client';
-import { ReactFlow, addEdge,   MiniMap,
+import { useSuspenseQuery, gql } from '@apollo/client';
+import {
+  ReactFlow,
+  addEdge,
+  Background,
   Controls,
-  Background,useEdgesState, useNodesState } from '@xyflow/react';
+  MiniMap,
+  useEdgesState,
+  useNodesState
+} from '@xyflow/react';
 import {
   nodes as initialNodes,
   edges as initialEdges
@@ -24,6 +30,14 @@ const GET_APPLICATION_GRAPH = gql`
   }
 `;
 
+const GET_SYSTEMS = gql`
+  query Systems {
+    systems {
+      id
+    }
+  }
+`;
+
 const nodeTypes = {
   annotation: AnnotationNode,
   tools: ToolbarNode,
@@ -33,14 +47,16 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  button: ButtonEdge,
+  button: ButtonEdge
 };
 
 const nodeClassName = (node) => node.type;
 
 function ApplicationsGraph() {
-  const { data } = useSuspenseQuery(GET_APPLICATION_GRAPH);
-  console.log("applicationGraph data ", data?.applicationGraph);
+  const { data: applicationGraph } = useSuspenseQuery(GET_APPLICATION_GRAPH);
+  const { data: systems } = useSuspenseQuery(GET_SYSTEMS);
+
+  console.log("applicationGraph data ", applicationGraph, systems);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
