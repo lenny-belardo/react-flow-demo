@@ -3,7 +3,23 @@ import { delay, graphql, HttpResponse } from 'msw';
 
 const systems = {
     getSystems: {
-        systems: []
+        systems: [{
+            id: "machine-id-aaaa",
+            version: 5,
+            __typename: "System"
+        }, {
+            id: "machine-id-bbbb",
+            version: 4,
+            __typename: "System"
+        }, {
+            id: "machine-id-cccc",
+            version: 3,
+            __typename: "System"
+        }, {
+            id: "machine-id-dddd",
+            version: 2,
+            __typename: "System"
+        }]
     }
 };
 
