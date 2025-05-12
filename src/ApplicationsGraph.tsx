@@ -24,6 +24,13 @@ const GET_APPLICATION_GRAPH = gql`
   }
 `;
 
+const GET_SYSTEMS = gql`
+  query Systems {
+    systems {
+      id
+    }
+  }
+`;
 const nodeTypes = {
   annotation: AnnotationNode,
   tools: ToolbarNode,
@@ -33,14 +40,16 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  button: ButtonEdge,
+  button: ButtonEdge
 };
 
 const nodeClassName = (node) => node.type;
 
 function ApplicationsGraph() {
-  const { data } = useSuspenseQuery(GET_APPLICATION_GRAPH);
-  console.log("applicationGraph data ", data?.applicationGraph);
+  const { data: applicationGraph } = useSuspenseQuery(GET_APPLICATION_GRAPH);
+  const { data: systems } = useSuspenseQuery(GET_SYSTEMS);
+
+  console.log("applicationGraph data ", applicationGraph, systems);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
