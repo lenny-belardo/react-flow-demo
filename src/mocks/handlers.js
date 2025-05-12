@@ -1,4 +1,4 @@
-import { graphql, HttpResponse } from 'msw';
+import { delay, graphql, HttpResponse } from 'msw';
 
 const applicationGraph = {
     getApplicationGraph: {
@@ -567,11 +567,14 @@ const applicationGraph = {
 };
 
 export const handlers = [
-    graphql.query('ApplicationGraph', () => {
-        return HttpResponse.json({
-            data: {
-                applicationGraph
-            }
-        });
+    graphql.query('ApplicationGraph', async () => {
+      // Add an artificial delay of 1000ms
+      await delay(5000);
+  
+      return HttpResponse.json({
+        data: {
+          applicationGraph
+        }
+      });
     })
-];
+  ];
