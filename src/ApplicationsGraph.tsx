@@ -71,6 +71,8 @@ function ApplicationsGraph() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         fitView
         nodeTypes={nodeTypes}
