@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useSuspenseQuery, gql } from '@apollo/client';
 import {
   ReactFlow,
@@ -53,10 +53,17 @@ const edgeTypes = {
 const nodeClassName = (node) => node.type;
 
 function ApplicationsGraph() {
-  const { data: applicationGraph } = useSuspenseQuery(GET_APPLICATION_GRAPH);
+  const {
+    data: {
+      applicationGraph: {
+        getApplicationGraph: {
+          apps
+        }
+      }
+    }} = useSuspenseQuery(GET_APPLICATION_GRAPH);
   const { data: systems } = useSuspenseQuery(GET_SYSTEMS);
 
-  console.log("applicationGraph data ", applicationGraph, systems);
+  console.log("applicationGraph data ", apps, systems);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -65,6 +72,48 @@ function ApplicationsGraph() {
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  useEffect(() => {
+    if (apps.length) {
+      const normalizedNodes = apps?.map((item, index) => {
+        return {
+          id: item.id,
+          draggable: true,
+          data: { label: item.name },
+          position: { x: 0, y: 50 * index }
+        };
+      });
+
+      const MOCK_EDGES = [{
+        id: 'ea-b',
+        source: 'app-id-aaaa',
+        target: 'app-id-bbbb',
+        label: 'edge',
+        type: 'smoothstep'
+      }, {
+        id: 'eb-c',
+        source: 'app-id-bbbb',
+        target: 'app-id-cccc',
+        label: 'edge',
+        type: 'smoothstep'
+      }, {
+        id: 'ec-d',
+        source: 'app-id-cccc',
+        target: 'app-id-dddd',
+        label: 'edge',
+        type: 'smoothstep'
+      }, {
+        id: 'ed-a',
+        source: 'app-id-dddd',
+        target: 'app-id-aaaa',
+        label: 'edge',
+        type: 'smoothstep'
+      }];
+
+      setNodes(normalizedNodes);
+      setEdges(MOCK_EDGES);
+    }
+  }, [apps, setEdges, setNodes]);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
