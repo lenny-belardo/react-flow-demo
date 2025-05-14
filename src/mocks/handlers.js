@@ -566,22 +566,22 @@ const applicationGraph = {
         appToHost: [
             {
                 appId: "app-id-aaaa",
-                hostId: "machine-id-aaaa",
+                hostId: "app-id-bbbb",  // hostId: "machine-id-aaaa",
                 __typename: "AppToHost"
             },
             {
-                appId: "app-id-bbbb",
-                hostId: "machine-id-bbbb",
+                appId: "app-id-aaaa",
+                hostId: "app-id-bbbb",  // hostId: "machine-id-bbbb",
+                __typename: "AppToHost"
+            },
+            {
+                appId: "app-id-aaaa",
+                hostId: "app-id-cccc",  // hostId: "machine-id-cccc",
                 __typename: "AppToHost"
             },
             {
                 appId: "app-id-cccc",
-                hostId: "machine-id-cccc",
-                __typename: "AppToHost"
-            },
-            {
-                appId: "app-id-dddd",
-                hostId: "machine-id-dddd",
+                hostId: "app-id-dddd",  // hostId: "machine-id-dddd",
                 __typename: "AppToHost"
             }
         ],

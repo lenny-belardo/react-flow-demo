@@ -1,18 +1,18 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useLayoutEffect } from 'react';
 import { useSuspenseQuery, gql } from '@apollo/client';
+import ELK from 'elkjs/lib/elk.bundled.js';
 import {
   ReactFlow,
+  ReactFlowProvider,
   addEdge,
   Background,
   Controls,
   MiniMap,
   useEdgesState,
-  useNodesState
+  useNodesState,
+  useReactFlow
 } from '@xyflow/react';
-import {
-  nodes as initialNodes,
-  edges as initialEdges
-} from './initial-elements.jsx';
+
 import AnnotationNode from './AnnotationNode';
 import ToolbarNode from './ToolbarNode';
 import ResizerNode from './ResizerNode';
@@ -52,68 +52,111 @@ const edgeTypes = {
 
 const nodeClassName = (node) => node.type;
 
+const elk = new ELK();
+
+const elkOptions = {
+  'elk.algorithm': 'layered',
+  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+  'elk.spacing.nodeNode': '80',
+};
+
+const getLayoutedElements = (nodes, edges, options = {}) => {
+  const isHorizontal = options?.['elk.direction'] === 'RIGHT';
+  const graph = {
+    id: 'root',
+    layoutOptions: options,
+    children: nodes.map((node) => ({
+      ...node,
+      // Adjust the target and source handle positions based on the layout
+      // direction.
+      targetPosition: isHorizontal ? 'left' : 'top',
+      sourcePosition: isHorizontal ? 'right' : 'bottom',
+
+      // Hardcode a width and height for elk to use when layouting.
+      width: 150,
+      height: 50,
+    })),
+    edges: edges,
+  };
+
+  return elk
+    .layout(graph)
+    .then((layoutedGraph) => ({
+      nodes: layoutedGraph.children.map((node) => ({
+        ...node,
+        // React Flow expects a position property on the node instead of `x`
+        // and `y` fields.
+        position: { x: node.x, y: node.y },
+      })),
+
+      edges: layoutedGraph.edges,
+    }))
+    .catch(console.error);
+};
+
 function ApplicationsGraph() {
   const {
     data: {
       applicationGraph: {
         getApplicationGraph: {
-          apps
+          apps,
+          appToHost
         }
       }
-    }} = useSuspenseQuery(GET_APPLICATION_GRAPH);
+    }
+  } = useSuspenseQuery(GET_APPLICATION_GRAPH);
+
   const { data: systems } = useSuspenseQuery(GET_SYSTEMS);
 
-  console.log("applicationGraph data ", apps, systems);
+  console.log("applicationGraph data ", apps, systems, elk);
 
   const onConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),
     [],
   );
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const normalizedNodes = apps?.map((item) => {
+    return {
+      id: item.id,
+      draggable: true,
+      data: { label: item.name },
+      position: { x: 0, y: 0}
+    };
+  });
 
-  useEffect(() => {
-    if (apps.length) {
-      const normalizedNodes = apps?.map((item, index) => {
-        return {
-          id: item.id,
-          draggable: true,
-          data: { label: item.name },
-          position: { x: 0, y: 50 * index }
-        };
-      });
+  const normalizeEdges = appToHost.map((item) => {
+    return {
+      id: `${item.appId}-${item.hostId}`,
+      source: item.appId,
+      target: item.hostId,
+      type: 'smoothstep'
+    };
+  });
 
-      const MOCK_EDGES = [{
-        id: 'ea-b',
-        source: 'app-id-aaaa',
-        target: 'app-id-bbbb',
-        label: 'edge',
-        type: 'smoothstep'
-      }, {
-        id: 'eb-c',
-        source: 'app-id-bbbb',
-        target: 'app-id-cccc',
-        label: 'edge',
-        type: 'smoothstep'
-      }, {
-        id: 'ec-d',
-        source: 'app-id-cccc',
-        target: 'app-id-dddd',
-        label: 'edge',
-        type: 'smoothstep'
-      }, {
-        id: 'ed-a',
-        source: 'app-id-dddd',
-        target: 'app-id-aaaa',
-        label: 'edge',
-        type: 'smoothstep'
-      }];
+  const [nodes, setNodes, onNodesChange] = useNodesState(normalizedNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(normalizeEdges);
+  const { fitView } = useReactFlow();
 
-      setNodes(normalizedNodes);
-      setEdges(MOCK_EDGES);
-    }
-  }, [apps, setEdges, setNodes]);
+  const onLayout = useCallback(
+    ({ direction, useInitialNodes = false }) => {
+      const opts = { 'elk.direction': direction, ...elkOptions };
+      const ns = useInitialNodes ? nodes : nodes;
+      const es = useInitialNodes ? edges : edges;
+ 
+      getLayoutedElements(ns, es, opts).then(
+        ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
+          setNodes(layoutedNodes);
+          setEdges(layoutedEdges);
+          fitView();
+        }
+      );
+    },
+    [nodes, edges, setEdges, setNodes, fitView],
+  );
+
+  useLayoutEffect(() => {
+    onLayout({ direction: 'DOWN'});
+  }, []);
 
   return (
     <div style={{ width: '100vw', height: '100vh' }}>
@@ -133,10 +176,16 @@ function ApplicationsGraph() {
 
         <Controls />
 
-        <Background  />
+        <Background />
       </ReactFlow>
     </div>
   )
 }
 
-export default ApplicationsGraph
+const ReactFlowWithProvider = () => (
+  <ReactFlowProvider>
+    <ApplicationsGraph />
+  </ReactFlowProvider>
+);
+
+export default ReactFlowWithProvider;
